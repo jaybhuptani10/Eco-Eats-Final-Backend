@@ -1,5 +1,5 @@
-Eco Eats
-This is the Project for Hackathon Hack This Fall 4.0 (2024) at Karnavati University
+#Eco Eats
+
 
 Aim
 Sustainanble Waste Management by Providing service to collect Waste from Users and Sell it to the Agents Who recycle it.
