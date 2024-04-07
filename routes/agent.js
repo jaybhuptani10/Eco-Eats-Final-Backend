@@ -3,6 +3,25 @@ const router = express.Router();
 const middleware = require("../middleware/index.js");
 const User = require("../models/user.js");
 const Donation = require("../models/donation.js");
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+	service: 'gmail',
+	host: 'smtp.gmail.com',
+	port: 587,
+	secure: false,
+	auth: {
+		user:'vidhanprajapati27@gmail.com',
+		pass:'fvyu vbqg uuxu xyum' 
+	},
+})
+
+const { Vonage } = require('@vonage/server-sdk')
+
+const vonage = new Vonage({
+  apiKey: "64520c27",
+  apiSecret: "C88nZWO1xe6Gyat2"
+})
 
 router.get("/agent/dashboard", middleware.ensureAgentLoggedIn, async (req,res) => {
 	const agentId = req.user._id;
@@ -100,8 +119,34 @@ router.get("/agent/donation/accept/:donationId", middleware.ensureAgentLoggedIn,
 	{
 		const donationId = req.params.donationId;
 		await Donation.findByIdAndUpdate(donationId, { status: "accepted" });
+		const donation = await Donation.findById(donationId).populate("donor");
 		req.flash("success", "Donation accepted successfully");
-		res.json({message:`/admin/donation/view/${donationId}`});
+		const mailOptions = {
+			from:{
+				name: 'Donation Management System',
+				address: 'vidhanprajapati27@gmail.com'
+			},
+			to: donation.donor.email,
+			subject: 'Donation Status',
+			text:"Your donation has been accepted by the agent. Please wait for the agent to collect the donation.",
+		}
+		await transporter.sendMail(mailOptions);
+
+		const from = "EcoEats"
+		const to = donation.phone
+		console.log(to)
+		const text =` Your donation ${donation.quantity} has been accepted by the agent. Please wait for the agent to collect the donation.`
+		async function sendSMS() {
+			await vonage.sms.send({to, from, text})
+				.then(resp => { console.log('Message sent successfully'); console.log(resp); })
+				.catch(err => { console.log('There was an error sending the messages.'); console.error(err); });
+		}
+		for (let i = 0; i < 2; i++){
+			sendSMS();
+		}
+		res.json({message:'Accepted'})
+
+		
 	}
 	catch(err)
 	{
@@ -128,7 +173,35 @@ router.get("/agent/donation/reject/:donationId", middleware.ensureAgentLoggedIn,
 	{
 		const donationId = req.params.donationId;
 		await Donation.findByIdAndUpdate(donationId, { status: "rejected" });
-		res.json(`/admin/donation/view/${donationId}`);
+		const donation = await Donation.findById(donationId).populate("donor");
+		req.flash("success", "Donation rejected successfully");
+		const mailOptions = {
+			from:{
+				name: 'Donation Management System',
+				address: 'vidhanprajapati27@gmail.com'
+			},
+			to: donation.donor.email,
+			subject: 'Donation Status',
+			text:"Your donation has been Rejected by the agent. Due to some reasons.",
+		}
+		await transporter.sendMail(mailOptions);
+
+		const from = "EcoEats"
+		const to = donation.phone
+		console.log(to)
+		const text =` Your donation ${donation.quantity} has been rejected by the agent. Due to some reasons.`
+		async function sendSMS() {
+			await vonage.sms.send({to, from, text})
+				.then(resp => { console.log('Message sent successfully'); console.log(resp); })
+				.catch(err => { console.log('There was an error sending the messages.'); console.error(err); });
+		}
+		for (let i = 0; i < 2; i++){
+			sendSMS();
+		}
+		res.json({message:'Rejected'})
+
+		
+
 	}
 	catch(err)
 	{

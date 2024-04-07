@@ -11,13 +11,15 @@ router.get("/donor/dashboard", middleware.ensureDonorLoggedIn, async (req, res) 
         const EWasteDonations = await Donation.countDocuments({ donor: donorId, wasteType:"ewaste" });
         const FoodDonations = await Donation.countDocuments({ donor: donorId, wasteType: "foodwaste" });
         const ClothsDonations = await Donation.countDocuments({ donor: donorId, wasteType: "clothwaste" });
+        const AcceptedDonations = await Donation.countDocuments({ donor: donorId, status: "accepted" });
 
         res.json({
             title: "Dashboard",
             TotalDonations,
             EWasteDonations,
             FoodDonations,
-            ClothsDonations
+            ClothsDonations,
+            AcceptedDonations
         });
     } catch (err) {
         console.log(err);
@@ -54,8 +56,8 @@ router.get("/donor/donations/pending", middleware.ensureDonorLoggedIn, async (re
 });
 router.get("/donor/donations/foodwaste", middleware.ensureDonorLoggedIn, async (req, res) => {
     try {
-        const pendingDonations = await Donation.find({ donor: req.user._id, wasteType:"foodwaste" }).populate("agent");
-        res.json({ title: "FoodWaste", pendingDonations });
+        const foodDonations = await Donation.find({ donor: req.user._id, wasteType:"foodwaste" }).populate("agent");
+        res.json({ title: "FoodWaste", foodDonations });
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: 'Some error occurred on the server.' });
@@ -63,8 +65,8 @@ router.get("/donor/donations/foodwaste", middleware.ensureDonorLoggedIn, async (
 });
 router.get("/donor/donations/ewaste", middleware.ensureDonorLoggedIn, async (req, res) => {
     try {
-        const pendingDonations = await Donation.find({ donor: req.user._id, wasteType:"ewaste" }).populate("agent");
-        res.json({ title: "EWaste", pendingDonations });
+        const ewasteDonations = await Donation.find({ donor: req.user._id, wasteType:"ewaste" }).populate("agent");
+        res.json({ title: "EWaste", ewasteDonations });
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: 'Some error occurred on the server.' });
@@ -72,8 +74,8 @@ router.get("/donor/donations/ewaste", middleware.ensureDonorLoggedIn, async (req
 });
 router.get("/donor/donations/clothwaste", middleware.ensureDonorLoggedIn, async (req, res) => {
     try {
-        const pendingDonations = await Donation.find({ donor: req.user._id, wasteType:"clothwaste" }).populate("agent");
-        res.json({ title: "ClothWaste", pendingDonations });
+        const clothDonations = await Donation.find({ donor: req.user._id, wasteType:"clothwaste" }).populate("agent");
+        res.json({ title: "ClothWaste", clothDonations });
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: 'Some error occurred on the server.' });
